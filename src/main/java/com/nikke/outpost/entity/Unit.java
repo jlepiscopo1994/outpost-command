@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "units")
@@ -49,10 +50,9 @@ public class Unit {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // Uncomment when implementing TacticalLog JPA
-//    @OneToMany(mappedBy = "unit", cascade = CascadeType.ALL, orphanRemoval = true)
-//    @Builder.Default
-//    private List<TacticalLog> tacticalLogs = new ArrayList<>();
+    @OneToMany(mappedBy = "unit", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<TacticalLog> tacticalLogs = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
