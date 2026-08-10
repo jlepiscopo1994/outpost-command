@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public record TacticalLogResponse(
         Long id,
-        String unitId,
+        Long unitId,
         String title,
         String content,
         LocalDateTime createdAt
