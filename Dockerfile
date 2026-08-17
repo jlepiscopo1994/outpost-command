@@ -23,6 +23,9 @@ FROM eclipse-temurin:21-jre-alpine AS runner
 
 WORKDIR /app
 
+# Upgrade installed Alpine packages to the latest patched security releases
+RUN apk update && apk upgrade --no-cache
+
 # Create a non-root user and group for security compliance
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
