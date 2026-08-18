@@ -1,6 +1,8 @@
+version: '3.8'
+
 services:
   outpost-db:
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:pg16 # Swapped for native pgvector support
     container_name: outpost_postgres
     environment:
       POSTGRES_DB: outpost_db

@@ -13,5 +13,6 @@ public record UnitSummaryResponse(
         WeaponType weaponType,
         BurstType burstType,
         ClassType classType,
+        String imageUrl,
         LocalDateTime createdAt
 ) {}

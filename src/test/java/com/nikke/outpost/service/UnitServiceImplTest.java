@@ -1,7 +1,11 @@
 package com.nikke.outpost.service;
 
+import com.nikke.outpost.dto.request.BurstSkillRequest;
 import com.nikke.outpost.dto.request.CreateUnitRequest;
+import com.nikke.outpost.dto.request.SkillRequest;
 import com.nikke.outpost.dto.response.UnitResponse;
+import com.nikke.outpost.entity.BurstSkill;
+import com.nikke.outpost.entity.Skill;
 import com.nikke.outpost.entity.Unit;
 import com.nikke.outpost.enums.*;
 import com.nikke.outpost.exception.DuplicateResourceException;
@@ -16,6 +20,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -38,6 +44,15 @@ class UnitServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        SkillRequest skill1Req = new SkillRequest("FF Drill", "Deals continuous piercing damage.");
+        SkillRequest skill2Req = new SkillRequest("Tactical Reload", "Increases reload speed by 25%.");
+        BurstSkillRequest burstReq = new BurstSkillRequest(
+                "Absolute Penetration",
+                "Deals massive damage to a single target.",
+                BurstType.BURST_3,
+                40
+        );
+
         nativeRequest = new CreateUnitRequest(
                 "Rapi",
                 "Nikke",
@@ -45,18 +60,43 @@ class UnitServiceImplTest {
                 Element.FIRE,
                 WeaponType.AR,
                 BurstType.BURST_3,
-                ClassType.ATTACKER
+                ClassType.ATTACKER,
+                "https://raw.githubusercontent.com/fabulous/nikke-db/main/rapi.png",
+                skill1Req,
+                skill2Req,
+                burstReq
         );
 
         crossoverRequest = new CreateUnitRequest(
                 "2B",
                 "NieR:Automata",
-                Manufacturer.ELYSION, // Request specififes ELYSION, but business rules must enforce ABNORMAL!
+                Manufacturer.ELYSION, // Request specifies ELYSION, but business rules must enforce ABNORMAL!
                 Element.FIRE,
                 WeaponType.RL,
                 BurstType.BURST_3,
-                ClassType.DEFENDER
+                ClassType.DEFENDER,
+                "https://raw.githubusercontent.com/fabulous/nikke-db/main/2b.png",
+                null,
+                null,
+                null
         );
+
+        Skill skill1 = Skill.builder()
+                .name("FF Drill")
+                .description("Deals continuous piercing damage.")
+                .build();
+
+        Skill skill2 = Skill.builder()
+                .name("Tactical Reload")
+                .description("Increases reload speed by 25%.")
+                .build();
+
+        BurstSkill burstSkill = BurstSkill.builder()
+                .name("Absolute Penetration")
+                .description("Deals massive damage to a single target.")
+                .burstType(BurstType.BURST_3)
+                .cooldown(40)
+                .build();
 
         savedNativeUnit = Unit.builder()
                 .id(1L)
@@ -67,6 +107,12 @@ class UnitServiceImplTest {
                 .weaponType(WeaponType.AR)
                 .burstType(BurstType.BURST_3)
                 .classType(ClassType.ATTACKER)
+                .imageUrl("https://raw.githubusercontent.com/fabulous/nikke-db/main/rapi.png")
+                .skill1(skill1)
+                .skill2(skill2)
+                .burstSkill(burstSkill)
+                .tacticalLogs(List.of())
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -90,6 +136,12 @@ class UnitServiceImplTest {
             assertThat(response.name()).isEqualTo("Rapi");
             assertThat(response.originIp()).isEqualTo("Nikke");
             assertThat(response.manufacturer()).isEqualTo(Manufacturer.ELYSION);
+            assertThat(response.imageUrl()).isEqualTo("https://raw.githubusercontent.com/fabulous/nikke-db/main/rapi.png");
+            assertThat(response.skill1()).isNotNull();
+            assertThat(response.skill1().name()).isEqualTo("FF Drill");
+            assertThat(response.burstSkill()).isNotNull();
+            assertThat(response.burstSkill().cooldown()).isEqualTo(40);
+
             verify(unitRepository, times(1)).existsByName("Rapi");
             verify(unitRepository, times(1)).save(any(Unit.class));
         }
@@ -102,11 +154,14 @@ class UnitServiceImplTest {
                     .id(2L)
                     .name("2B")
                     .originIp("NieR:Automata")
-                    .manufacturer(Manufacturer.ABNORMAL) // Business logic auto-converted
+                    .manufacturer(Manufacturer.ABNORMAL)
                     .element(Element.FIRE)
                     .weaponType(WeaponType.RL)
                     .burstType(BurstType.BURST_3)
                     .classType(ClassType.DEFENDER)
+                    .imageUrl("https://raw.githubusercontent.com/fabulous/nikke-db/main/2b.png")
+                    .tacticalLogs(List.of())
+                    .createdAt(LocalDateTime.now())
                     .build();
 
             when(unitRepository.existsByName(crossoverRequest.name())).thenReturn(false);
@@ -159,6 +214,8 @@ class UnitServiceImplTest {
             assertThat(response).isNotNull();
             assertThat(response.id()).isEqualTo(1L);
             assertThat(response.name()).isEqualTo("Rapi");
+            assertThat(response.skill1()).isNotNull();
+            assertThat(response.skill1().name()).isEqualTo("FF Drill");
             verify(unitRepository, times(1)).findById(1L);
         }
 

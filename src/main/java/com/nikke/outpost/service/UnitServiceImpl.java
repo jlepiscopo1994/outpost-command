@@ -1,9 +1,11 @@
 package com.nikke.outpost.service;
 
+import com.nikke.outpost.dto.request.BurstSkillRequest;
 import com.nikke.outpost.dto.request.CreateUnitRequest;
-import com.nikke.outpost.dto.response.TacticalLogResponse;
-import com.nikke.outpost.dto.response.UnitResponse;
-import com.nikke.outpost.dto.response.UnitSummaryResponse;
+import com.nikke.outpost.dto.request.SkillRequest;
+import com.nikke.outpost.dto.response.*;
+import com.nikke.outpost.entity.BurstSkill;
+import com.nikke.outpost.entity.Skill;
 import com.nikke.outpost.entity.Unit;
 import com.nikke.outpost.enums.BurstType;
 import com.nikke.outpost.enums.Manufacturer;
@@ -37,7 +39,12 @@ public class UnitServiceImpl implements UnitService {
             effectiveManufacturer = Manufacturer.ABNORMAL;
         }
 
-        // 3. Build and Persist Entity
+        // 3. Map Embeddable Skills
+        Skill skill1 = mapToSkillEntity(request.skill1());
+        Skill skill2 = mapToSkillEntity(request.skill2());
+        BurstSkill burstSkill = mapToBurstSkillEntity(request.burstSkill());
+
+        // 4. Build and Persist Entity
         Unit unit = Unit.builder()
                 .name(request.name().trim())
                 .originIp(request.originIp().trim())
@@ -46,6 +53,10 @@ public class UnitServiceImpl implements UnitService {
                 .weaponType(request.weaponType())
                 .burstType(request.burstType())
                 .classType(request.classType())
+                .imageUrl(request.imageUrl())
+                .skill1(skill1)
+                .skill2(skill2)
+                .burstSkill(burstSkill)
                 .build();
 
         Unit savedUnit = unitRepository.save(unit);
@@ -79,6 +90,51 @@ public class UnitServiceImpl implements UnitService {
     }
 
     // -- Helper Mapping Methods --
+
+    private Skill mapToSkillEntity(SkillRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return Skill.builder()
+                .name(request.name())
+                .description(request.description())
+                .build();
+    }
+
+    private BurstSkill mapToBurstSkillEntity(BurstSkillRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return BurstSkill.builder()
+                .name(request.name())
+                .description(request.description())
+                .burstType(request.burstType())
+                .cooldown(request.cooldown())
+                .build();
+    }
+
+    private SkillResponse mapToSkillResponse(Skill skill) {
+        if (skill == null) {
+            return null;
+        }
+        return new SkillResponse(
+                skill.getName(),
+                skill.getDescription()
+        );
+    }
+
+    private BurstSkillResponse mapToBurstSkillResponse(BurstSkill burstSkill) {
+        if (burstSkill == null) {
+            return null;
+        }
+        return new BurstSkillResponse(
+                burstSkill.getName(),
+                burstSkill.getDescription(),
+                burstSkill.getBurstType(),
+                burstSkill.getCooldown()
+        );
+    }
+
     private UnitResponse mapToUnitResponse(Unit unit) {
         List<TacticalLogResponse> logs = unit.getTacticalLogs() == null ? List.of() :
                 unit.getTacticalLogs().stream()
@@ -98,6 +154,10 @@ public class UnitServiceImpl implements UnitService {
                 unit.getWeaponType(),
                 unit.getBurstType(),
                 unit.getClassType(),
+                unit.getImageUrl(),
+                mapToSkillResponse(unit.getSkill1()),
+                mapToSkillResponse(unit.getSkill2()),
+                mapToBurstSkillResponse(unit.getBurstSkill()),
                 unit.getCreatedAt(),
                 logs
         );
@@ -113,6 +173,7 @@ public class UnitServiceImpl implements UnitService {
                 unit.getWeaponType(),
                 unit.getBurstType(),
                 unit.getClassType(),
+                unit.getImageUrl(),
                 unit.getCreatedAt()
         );
     }
