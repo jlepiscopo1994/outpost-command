@@ -2,14 +2,20 @@ package com.nikke.outpost.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.nikke.outpost.dto.request.BurstSkillRequest;
 import com.nikke.outpost.dto.request.CreateUnitRequest;
+import com.nikke.outpost.dto.request.SkillRequest;
+import com.nikke.outpost.dto.response.BurstSkillResponse;
+import com.nikke.outpost.dto.response.SkillResponse;
 import com.nikke.outpost.dto.response.UnitResponse;
 import com.nikke.outpost.dto.response.UnitSummaryResponse;
+import com.nikke.outpost.entity.BurstSkill;
 import com.nikke.outpost.enums.*;
 import com.nikke.outpost.exception.DuplicateResourceException;
 import com.nikke.outpost.exception.GlobalExceptionHandler;
 import com.nikke.outpost.exception.ResourceNotFoundException;
 import com.nikke.outpost.service.UnitService;
+import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -52,6 +58,16 @@ class UnitControllerTest {
     @BeforeEach
     void setUp() {
         objectMapper.findAndRegisterModules(); // Register modules for Java 8 date/time support
+
+        SkillRequest sampleSkill1Request = new SkillRequest("FF Drill", "Deals continious piercing damage.");
+        SkillRequest sampleSkill2Request = new SkillRequest("Tactical Reload", "Increase reload speed by 25.");
+        BurstSkillRequest sampleBurstRequest = new BurstSkillRequest(
+                "Absolute Penetration",
+                "Deals massive damage to a single target.",
+                BurstType.BURST_3,
+                40
+        );
+
         validCreateRequest = new CreateUnitRequest(
                 "Rapi",
                 "Nikke",
@@ -59,7 +75,20 @@ class UnitControllerTest {
                 Element.FIRE,
                 WeaponType.AR,
                 BurstType.BURST_3,
-                ClassType.ATTACKER
+                ClassType.ATTACKER,
+                "https://raw.githubusercontent.com/fabulous/nikke-db/main/rapi.png",
+                sampleSkill1Request,
+                sampleSkill2Request,
+                sampleBurstRequest
+        );
+
+        SkillResponse sampleSkill1Response = new SkillResponse("FF Drill", "Deals continious piercing damage.");
+        SkillResponse sampleSkill2Response = new SkillResponse("Tactical Reload", "Increase reload speed by 25%.");
+        BurstSkillResponse sampleBurstResponse = new BurstSkillResponse(
+                "Absolute Penetration",
+                "Deals massive damage to a single target.",
+                BurstType.BURST_3,
+                40
         );
 
         sampleUnitResponse = new UnitResponse(
@@ -71,6 +100,10 @@ class UnitControllerTest {
                 WeaponType.AR,
                 BurstType.BURST_3,
                 ClassType.ATTACKER,
+                "https://raw.githubusercontent.com/fabulous/nikke-db/main/rapi.png",
+                sampleSkill1Response,
+                sampleSkill2Response,
+                sampleBurstResponse,
                 LocalDateTime.now(),
                 List.of()
         );
@@ -84,6 +117,7 @@ class UnitControllerTest {
                 WeaponType.AR,
                 BurstType.BURST_3,
                 ClassType.ATTACKER,
+                "https://raw.githubusercontent.com/fabulous/nikke-db/main/rapi.png",
                 LocalDateTime.now()
         );
     }
@@ -105,7 +139,12 @@ class UnitControllerTest {
                     .andExpect(jsonPath("$.id").value(1))
                     .andExpect(jsonPath("$.name").value("Rapi"))
                     .andExpect(jsonPath("$.originIp").value("Nikke"))
-                    .andExpect(jsonPath("$.manufacturer").value("ELYSION"));
+                    .andExpect(jsonPath("$.manufacturer").value("ELYSION"))
+                    .andExpect(jsonPath("$.imageUrl").value("https://raw.githubusercontent.com/fabulous/nikke-db/main/rapi.png"))
+                    .andExpect(jsonPath("$.skill1.name").value("FF Drill"))
+                    .andExpect(jsonPath("$.skill2.name").value("Tactical Reload"))
+                    .andExpect(jsonPath("$.burstSkill.name").value("Absolute Penetration"))
+                    .andExpect(jsonPath("$.burstSkill.cooldown").value(40));
         }
 
         @Test
@@ -118,7 +157,11 @@ class UnitControllerTest {
                     Element.FIRE,
                     WeaponType.AR,
                     BurstType.BURST_3,
-                    ClassType.ATTACKER
+                    ClassType.ATTACKER,
+                    null,
+                    null,
+                    null,
+                    null
             );
 
             mockMvc.perform(post("/api/v1/units")
@@ -156,7 +199,8 @@ class UnitControllerTest {
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.size()").value(1))
-                    .andExpect(jsonPath("$[0].name").value("Rapi"));
+                    .andExpect(jsonPath("$[0].name").value("Rapi"))
+                    .andExpect(jsonPath("$[0].imageUrl").value("https://raw.githubusercontent.com/fabulous/nikke-db/main/rapi.png"));
         }
 
         @Test
@@ -188,7 +232,10 @@ class UnitControllerTest {
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(1))
-                    .andExpect(jsonPath("$.name").value("Rapi"));
+                    .andExpect(jsonPath("$.name").value("Rapi"))
+                    .andExpect(jsonPath("$.imageUrl").value("https://raw.githubusercontent.com/fabulous/nikke-db/main/rapi.png"))
+                    .andExpect(jsonPath("$.skill1.name").value("FF Drill"))
+                    .andExpect(jsonPath("$.burstSkill.cooldown").value(40));
         }
 
         @Test

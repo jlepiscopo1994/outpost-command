@@ -50,6 +50,36 @@ public class Unit {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    // -- EMBEDDED VALUE OBJECTS --
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "name", column = @Column(name = "skill_1_name")),
+            @AttributeOverride(name = "description", column = @Column(name = "skill_1_description",
+                    columnDefinition = "TEXT"))
+    })
+    private Skill skill1;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "name", column = @Column(name = "skill_2_name")),
+            @AttributeOverride(name = "description", column = @Column(name = "skill_2_description",
+                    columnDefinition = "TEXT"))
+    })
+    private Skill skill2;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "name", column = @Column(name = "burst_skill_name")),
+            @AttributeOverride(name = "description", column = @Column(name = "burst_skill_description",
+                    columnDefinition = "TEXT")),
+            @AttributeOverride(name = "burstType", column = @Column(name = "burst_skill_type")),
+            @AttributeOverride(name = "cooldown", column = @Column(name = "burst_skill_cooldown"))
+    })
+    private BurstSkill burstSkill;
+
     @OneToMany(mappedBy = "unit", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<TacticalLog> tacticalLogs = new ArrayList<>();

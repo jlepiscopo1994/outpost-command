@@ -1,5 +1,7 @@
 package com.nikke.outpost.dto.response;
 
+import com.nikke.outpost.entity.BurstSkill;
+import com.nikke.outpost.entity.Skill;
 import com.nikke.outpost.enums.*;
 
 import java.time.LocalDateTime;
@@ -14,6 +16,10 @@ public record UnitResponse(
         WeaponType weaponType,
         BurstType burstType,
         ClassType classType,
+        String imageUrl,
+        SkillResponse skill1,
+        SkillResponse skill2,
+        BurstSkillResponse burstSkill,
         LocalDateTime createdAt,
         List<TacticalLogResponse> tacticalLogs
 ) {}

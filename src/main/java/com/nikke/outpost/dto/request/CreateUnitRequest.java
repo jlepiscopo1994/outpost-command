@@ -2,6 +2,7 @@ package com.nikke.outpost.dto.request;
 
 import com.nikke.outpost.enums.*;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -37,5 +38,21 @@ public record CreateUnitRequest(
 
         @Schema(description = "Tactical battlefield role", example = "ATTACKER", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull(message = "Class type is required")
-        ClassType classType
+        ClassType classType,
+
+        @Schema(description = "Cloud asset URL or external image link",
+                example = "httpa://raw.githubusercontent.com/fabulous/nikke-db/main/rapi.png", nullable = true)
+        String imageUrl,
+
+        @Schema(description = "Primary passive / active skill 1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        @Valid
+        SkillRequest skill1,
+
+        @Schema(description = "Primary passive / active skill 2", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        @Valid
+        SkillRequest skill2,
+
+        @Schema(description = "Ultimate Burst skill", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        @Valid
+        BurstSkillRequest burstSkill
 ) {}
